@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "wcJMj7URN5irX0vrPubVhbldTgl+J2qUSvf7jUq0OL1MAKZzo1zoZbEmvFXnpv7OFRW0jTJtwK9YwEJ+Fyj12A==",
+  "dgSpecHash": "VyL48zrL4G8fZ4wsCPJDa7qjwoJj3O9MY0NjOZ4zGdeQz0keZxSx2GEzioqNnolAY31LKOMNc5UESc6FORRx5Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\usr0060\\Documents\\Otros\\Universidad\\Diseño Detallado de Software\\dds_tarea1\\dds_tarea1.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\usr0060\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
   "logs": []
 }

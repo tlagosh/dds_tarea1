@@ -13,3 +13,5 @@ C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_t
 C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_tarea1\obj\Debug\net6.0\dds_tarea1.pdb
 C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_tarea1\obj\Debug\net6.0\dds_tarea1.genruntimeconfig.cache
 C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_tarea1\obj\Debug\net6.0\ref\dds_tarea1.dll
+C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_tarea1\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\usr0060\Documents\Otros\Universidad\Diseño Detallado de Software\dds_tarea1\obj\Debug\net6.0\dds_tarea1.csproj.CopyComplete

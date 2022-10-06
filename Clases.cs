@@ -2,15 +2,15 @@
 public class SuperStar
 {
     // Agregamos los atributos de la clase
-    public string title;
+    public string Title;
     public int handSize;
     public int value;
     public string ability;
 
     // Agregamos el constructor de la clase
-    public SuperStar(string title, int handSize, int value, string ability)
+    public SuperStar(string Title, int handSize, int value, string ability)
     {
-        this.title = title;
+        this.Title = Title;
         this.handSize = handSize;
         this.value = value;
         this.ability = ability;
@@ -20,91 +20,91 @@ public class SuperStar
 public class Jugador
 {
     // Agregamos los atributos del jugador
-    public List <Carta> hand;
-    public SuperStar superStar;
-    public List <Carta> arsenal;
-    public List <Carta> ringArea;
-    public List <Carta> graveyard;
-    public int points;
-    public string title;
-    public int fortitude;
+    public List <Card> hand;
+    public SuperStar SuperStar;
+    public List <Card> Arsenal;
+    public List <Card> RingArea;
+    public List <Card> GraveYard;
+    public int Points;
+    public string Title;
+    public int Fortitude;
 
     // Agregamos el constructor del jugador
     public Jugador(string title, SuperStar superStar)
     {
-        this.title = title;
-        this.superStar = superStar;
-        this.hand = new List<Carta>();
-        this.arsenal = new List<Carta>();
-        this.ringArea = new List<Carta>();
-        this.graveyard = new List<Carta>();
-        this.points = 0;
-        this.fortitude = 0;
+        this.Title = title;
+        this.SuperStar = superStar;
+        this.hand = new List<Card>();
+        this.Arsenal = new List<Card>();
+        this.RingArea = new List<Card>();
+        this.GraveYard = new List<Card>();
+        this.Points = 0;
+        this.Fortitude = 0;
     }
 
     // Agregamos el método para agregar una carta a la mano
-    public void AddCardHand(Carta carta)
+    public void AddCardHand(Card carta)
     {
         this.hand.Add(carta);
     }
 
-    // Agregamos el método para agregar una carta al arsenal
-    public void AddCardArsenal(Carta carta)
+    // Agregamos el método para agregar una carta al Arsenal
+    public void AddCardArsenal(Card carta)
     {
-        this.arsenal.Add(carta);
+        this.Arsenal.Add(carta);
     }
 
-    // Agregamos el método para agregar una carta al ringArea
-    public void PlayCarta(Carta carta)
+    // Agregamos el método para agregar una carta al RingArea
+    public void PlayCarta(Card carta)
     {
-        this.ringArea.Add(carta);
+        this.RingArea.Add(carta);
 
-        this.fortitude += carta.damage;
+        this.Fortitude += carta.Damage;
     }
     
     // Agregamos el método para descartar una carta
-    public void AddCardGraveyard(Carta carta)
+    public void AddCardGraveYard(Card carta)
     {
-        this.graveyard.Add(carta);
+        this.GraveYard.Add(carta);
     }
 
     // Agregamos el método para mostrar las cartas de la mano
     public void ShowHandCards()
     {
         Console.WriteLine("Cartas en la mano:");
-        foreach (Carta carta in this.hand)
+        foreach (Card carta in this.hand)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
     }
 
-    // Agregamos el método para mostrar las cartas del arsenal
+    // Agregamos el método para mostrar las cartas del Arsenal
     public void ShowArsenalCards()
     {
-        Console.WriteLine("Cartas en el arsenal:");
-        foreach (Carta carta in this.arsenal)
+        Console.WriteLine("Cartas en el Arsenal:");
+        foreach (Card carta in this.Arsenal)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
     }
 
-    // Agregamos el método para mostrar las cartas del ringArea
+    // Agregamos el método para mostrar las cartas del RingArea
     public void ShowRingAreaCards()
     {
-        Console.WriteLine("Cartas en el ringArea:");
-        foreach (Carta carta in this.ringArea)
+        Console.WriteLine("Cartas en el RingArea:");
+        foreach (Card carta in this.RingArea)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
     }
 
-    // Agregamos el método para mostrar las cartas del graveyard
-    public void ShowGraveyardCards()
+    // Agregamos el método para mostrar las cartas del GraveYard
+    public void ShowGraveYardCards()
     {
-        Console.WriteLine("Cartas en el graveyard:");
-        foreach (Carta carta in this.graveyard)
+        Console.WriteLine("Cartas en el GraveYard:");
+        foreach (Card carta in this.GraveYard)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
     }
 
@@ -112,113 +112,146 @@ public class Jugador
     public void ShowPoints()
     {
         Console.WriteLine("Puntos del jugador:");
-        Console.WriteLine(this.points);
+        Console.WriteLine(this.Points);
     }
 
-    // Agregamos el método para mostrar el title del jugador
+    // Agregamos el método para mostrar el Title del jugador
     public void ShowTitle()
     {
         Console.WriteLine("Name del jugador:");
-        Console.WriteLine(this.title);
+        Console.WriteLine(this.Title);
     }
 
-    // Agregamos el método para mostrar el superStar del jugador
+    // Agregamos el método para mostrar el SuperStar del jugador
     public void ShowSuperStar()
     {
         Console.WriteLine("SuperStar del jugador:");
-        Console.WriteLine(this.superStar.title);
+        Console.WriteLine(this.SuperStar.Title);
     }
 
     // Agregamos el método para mostrar el estado del jugador
     public void ShowEstado()
     {
         Console.WriteLine("Estado del jugador:");
-        Console.WriteLine("Name: " + this.title);
-        Console.WriteLine("Puntos: " + this.points);
-        Console.WriteLine("SuperStar: " + this.superStar.title);
+        Console.WriteLine("Name: " + this.Title);
+        Console.WriteLine("Puntos: " + this.Points);
+        Console.WriteLine("SuperStar: " + this.SuperStar.Title);
         Console.WriteLine("Cartas en la mano:");
-        foreach (Carta carta in this.hand)
+        foreach (Card carta in this.hand)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
-        Console.WriteLine("Cartas en el arsenal:");
-        foreach (Carta carta in this.arsenal)
+        Console.WriteLine("Cartas en el Arsenal:");
+        foreach (Card carta in this.Arsenal)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
-        Console.WriteLine("Cartas en el ringArea:");
-        foreach (Carta carta in this.ringArea)
+        Console.WriteLine("Cartas en el RingArea:");
+        foreach (Card carta in this.RingArea)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
-        Console.WriteLine("Cartas en el graveyard:");
-        foreach (Carta carta in this.graveyard)
+        Console.WriteLine("Cartas en el GraveYard:");
+        foreach (Card carta in this.GraveYard)
         {
-            Console.WriteLine(carta.title);
+            Console.WriteLine(carta.Title);
         }
     }
 }
 
-public class Carta
+public class Card
 {
     // Agregamos los atributos de la carta
-    public string title;
-    public string type;
-    public List <string> effect;
-    public int damage;
+    public string Title;
+    public List <string> Types;
+    public List <string> Subtypes;
+    public string CardEffect;
+    public int Damage;
+    public int Fortitude;
+    public int StunValue;
 
     // Agregamos el constructor de la carta
-    public Carta(string title, string type, List <string> effect, int damage)
+    public Card(string title, List <string> types, List <string> subtypes, string cardEffect, int damage, int fortitude, int stunValue)
     {
-        this.title = title;
-        this.type = type;
-        this.effect = effect;
-        this.damage = damage;
+        this.Title = title;
+        this.Types = types;
+        this.Subtypes = subtypes;
+        this.CardEffect = cardEffect;
+        this.Damage = damage;
+        this.Fortitude = fortitude;
+        this.StunValue = stunValue;
     }
 
-    // Agregamos el método para mostrar el title de la carta
+    // Agregamos el método para mostrar los atributos de la carta
+    public void ShowCard()
+    {
+        Console.WriteLine("Carta:");
+        Console.WriteLine("Title: " + this.Title);
+        Console.WriteLine("Types: " + this.Types);
+        Console.WriteLine("Subtypes: " + this.Subtypes);
+        Console.WriteLine("CardEffect: " + this.CardEffect);
+        Console.WriteLine("Damage: " + this.Damage);
+        Console.WriteLine("Fortitude: " + this.Fortitude);
+        Console.WriteLine("StunValue: " + this.StunValue);
+    }
+
+    // Agregamos el método para mostrar el Title de la carta
     public void ShowTitle()
     {
         Console.WriteLine("Title de la carta:");
-        Console.WriteLine(this.title);
+        Console.WriteLine(this.Title);
     }
 
-    // Agregamos el método para mostrar el type de la carta
-    public void ShowType()
+    // Agregamos el método para mostrar el types de la carta
+    public void ShowTypes()
     {
-        Console.WriteLine("Type de la carta:");
-        Console.WriteLine(this.type);
+        Console.WriteLine("Types de la carta:");
+        Console.WriteLine(this.Types);
     }
 
-    // Agregamos el método para mostrar el effect de la carta
-    public void ShowEffect()
+    // Agregamos el método para mostrar el subtypes de la carta
+    public void ShowSubtypes()
     {
-        Console.WriteLine("Effect de la carta:");
-        foreach (string efecto in this.effect)
-        {
-            Console.WriteLine(efecto);
-        }
+        Console.WriteLine("Subtypes de la carta:");
+        Console.WriteLine(this.Subtypes);
+    }
+
+    // Agregamos el método para mostrar el cardEffect de la carta
+    public void ShowCardEffect()
+    {
+        Console.WriteLine("CardEffect de la carta:");
+        Console.WriteLine(this.CardEffect);
     }
 
     // Agregamos el método para mostrar el damage de la carta
     public void ShowDamage()
     {
         Console.WriteLine("Damage de la carta:");
-        Console.WriteLine(this.damage);
+        Console.WriteLine(this.Damage);
     }
 
-    // Agregamos el método para mostrar el estado de la carta
-    public void ShowEstado()
+    // Agregamos el método para mostrar el Fortitude de la carta
+    public void ShowFortitude()
     {
-        Console.WriteLine("Estado de la carta:");
-        Console.WriteLine("Title: " + this.title);
-        Console.WriteLine("Type: " + this.type);
-        Console.WriteLine("Effect: ");
-        foreach (string efecto in this.effect)
-        {
-            Console.WriteLine(efecto);
-        }
-        Console.WriteLine("Damage: " + this.damage);
+        Console.WriteLine("Fortitude de la carta:");
+        Console.WriteLine(this.Fortitude);
     }
 
+    // Agregamos el método para mostrar el stunValue de la carta
+    public void ShowStunValue()
+    {
+        Console.WriteLine("StunValue de la carta:");
+        Console.WriteLine(this.StunValue);
+    }
+}
+
+public class StringCard
+{
+    public string Title;
+    public List <string> Types;
+    public List <string> Subtypes;
+    public string CardEffect;
+    public string Damage;
+    public string Fortitude;
+    public string StunValue;
 }
