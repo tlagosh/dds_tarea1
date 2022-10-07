@@ -6,14 +6,68 @@ public class SuperStar
     public int handSize;
     public int value;
     public string ability;
+    public bool useBeforeDraw;
 
     // Agregamos el constructor de la clase
-    public SuperStar(string Title, int handSize, int value, string ability)
+    public SuperStar(string Title)
     {
         this.Title = Title;
-        this.handSize = handSize;
-        this.value = value;
-        this.ability = ability;
+        if (Title == "StoneCold")
+        {
+            this.handSize = 7;
+            this.value = 5;
+            this.ability = "Once during your turn, you may draw a card, but you must then take a card from your hand and place it on the bottom of your Arsenal.";
+            this.useBeforeDraw = false;
+        }
+        if (Title == "Undertaker")
+        {
+            this.handSize = 7;
+            this.value = 5;
+            this.ability = "Once during your turn, you may discard 2 cards to the Ringside pile and take 1 card from the Ringside pile and place it into your hand.";
+            this.useBeforeDraw = false;
+        }
+        if (Title == "Mankind")
+        {
+            this.handSize = 7;
+            this.value = 5;
+            this.ability = "You must always draw 2 cards, if possible, during your draw segment. All damage from opponent is at -1D.";
+            this.useBeforeDraw = true;
+        }
+        if (Title == "HHH")
+        {
+            this.handSize = 10;
+            this.value = 3;
+            this.ability = "None";
+            this.useBeforeDraw = false;
+        }
+        if (Title == "TheRock")
+        {
+            this.handSize = 7;
+            this.value = 5;
+            this.ability = "At the start of your turn, before your draw segment, you may take 1 card from your Ringside pile and place it on the bottom of your Arsenal.";
+            this.useBeforeDraw = true;
+        }
+        if (Title == "Kane")
+        {
+            this.handSize = 7;
+            this.value = 2;
+            this.ability = "At the start of your turn, before your draw segment, opponent must take the top card from his Arsenal and place it into his Ringside pile.";
+            this.useBeforeDraw = true;
+        }
+        if (Title == "Jericho")
+        {
+            this.handSize = 7;
+            this.value = 3;
+            this.ability = "Once during your turn, you may discard a card from your hand to force your opponent to discard a card from his hand.";
+            this.useBeforeDraw = false;
+        }
+        if (Title == "")
+        {
+            this.handSize = 0;
+            this.value = 0;
+            this.ability = "";
+            this.useBeforeDraw = false;
+        }
     }
 }
 
@@ -42,69 +96,55 @@ public class Jugador
         this.Fortitude = 0;
     }
 
-    // Agregamos el método para agregar una carta a la mano
-    public void AddCardHand(Card carta)
-    {
-        this.hand.Add(carta);
-    }
-
-    // Agregamos el método para agregar una carta al Arsenal
-    public void AddCardArsenal(Card carta)
-    {
-        this.Arsenal.Add(carta);
-    }
-
     // Agregamos el método para agregar una carta al RingArea
-    public void PlayCarta(Card carta)
+    public void PlayCard(Card carta)
     {
         this.RingArea.Add(carta);
 
         this.Fortitude += carta.Damage;
     }
-    
-    // Agregamos el método para descartar una carta
-    public void AddCardGraveYard(Card carta)
-    {
-        this.GraveYard.Add(carta);
-    }
 
     // Agregamos el método para mostrar las cartas de la mano
     public void ShowHandCards()
     {
-        Console.WriteLine("Cartas en la mano:");
-        foreach (Card carta in this.hand)
+        int number = 0;
+        foreach (Card card in this.hand)
         {
-            Console.WriteLine(carta.Title);
+            card.ShowCard(number);
+            number++;
         }
     }
 
     // Agregamos el método para mostrar las cartas del Arsenal
     public void ShowArsenalCards()
     {
-        Console.WriteLine("Cartas en el Arsenal:");
-        foreach (Card carta in this.Arsenal)
+        int number = 0;
+        foreach (Card card in this.Arsenal)
         {
-            Console.WriteLine(carta.Title);
+            card.ShowCard(number);
+            number++;
         }
     }
 
     // Agregamos el método para mostrar las cartas del RingArea
     public void ShowRingAreaCards()
     {
-        Console.WriteLine("Cartas en el RingArea:");
-        foreach (Card carta in this.RingArea)
+        int number = 0;
+        foreach (Card card in this.RingArea)
         {
-            Console.WriteLine(carta.Title);
+            card.ShowCard(number);
+            number++;
         }
     }
 
     // Agregamos el método para mostrar las cartas del GraveYard
     public void ShowGraveYardCards()
     {
-        Console.WriteLine("Cartas en el GraveYard:");
-        foreach (Card carta in this.GraveYard)
+        int number = 0;
+        foreach (Card card in this.GraveYard)
         {
-            Console.WriteLine(carta.Title);
+            card.ShowCard(number);
+            number++;
         }
     }
 
@@ -157,6 +197,22 @@ public class Jugador
             Console.WriteLine(carta.Title);
         }
     }
+
+    // Método para robar una carta del arsenal y ponerla en la mano
+    public void Draw()
+    {
+        if(this.Arsenal.Count > 0)
+        {
+            this.hand.Add(this.Arsenal[0]);
+            this.Arsenal.RemoveAt(0);
+        }
+    }
+
+    public void useSuperStarAbility()
+    {
+        // aplicar superstar ability
+    }
+
 }
 
 public class Card
@@ -183,66 +239,26 @@ public class Card
     }
 
     // Agregamos el método para mostrar los atributos de la carta
-    public void ShowCard()
+    public void ShowCard(int number)
     {
-        Console.WriteLine("Carta:");
+        Console.WriteLine("------------- Cartd #" + number);
         Console.WriteLine("Title: " + this.Title);
-        Console.WriteLine("Types: " + this.Types);
-        Console.WriteLine("Subtypes: " + this.Subtypes);
-        Console.WriteLine("CardEffect: " + this.CardEffect);
-        Console.WriteLine("Damage: " + this.Damage);
-        Console.WriteLine("Fortitude: " + this.Fortitude);
-        Console.WriteLine("StunValue: " + this.StunValue);
+        Console.WriteLine("Stats: [" + this.Fortitude + "F/" + this.Damage + "D/" + this.StunValue + "SV]");
+        Console.Write("Types: ");
+        foreach (string type in this.Types)
+        {
+            Console.Write(type);
+        }
+        Console.WriteLine();
+        Console.Write("Subtypes: ");
+        foreach (string subtype in this.Subtypes)
+        {
+            Console.Write(subtype + ", ");
+        }
+        Console.WriteLine();
+        Console.WriteLine("Effect: " + this.CardEffect);
     }
 
-    // Agregamos el método para mostrar el Title de la carta
-    public void ShowTitle()
-    {
-        Console.WriteLine("Title de la carta:");
-        Console.WriteLine(this.Title);
-    }
-
-    // Agregamos el método para mostrar el types de la carta
-    public void ShowTypes()
-    {
-        Console.WriteLine("Types de la carta:");
-        Console.WriteLine(this.Types);
-    }
-
-    // Agregamos el método para mostrar el subtypes de la carta
-    public void ShowSubtypes()
-    {
-        Console.WriteLine("Subtypes de la carta:");
-        Console.WriteLine(this.Subtypes);
-    }
-
-    // Agregamos el método para mostrar el cardEffect de la carta
-    public void ShowCardEffect()
-    {
-        Console.WriteLine("CardEffect de la carta:");
-        Console.WriteLine(this.CardEffect);
-    }
-
-    // Agregamos el método para mostrar el damage de la carta
-    public void ShowDamage()
-    {
-        Console.WriteLine("Damage de la carta:");
-        Console.WriteLine(this.Damage);
-    }
-
-    // Agregamos el método para mostrar el Fortitude de la carta
-    public void ShowFortitude()
-    {
-        Console.WriteLine("Fortitude de la carta:");
-        Console.WriteLine(this.Fortitude);
-    }
-
-    // Agregamos el método para mostrar el stunValue de la carta
-    public void ShowStunValue()
-    {
-        Console.WriteLine("StunValue de la carta:");
-        Console.WriteLine(this.StunValue);
-    }
 }
 
 public class StringCard

@@ -5,6 +5,9 @@ public class Game
     public List<Card> Cards = new List<Card>();
     public Jugador Jugador1;
     public Jugador Jugador2;
+    public List<Jugador> Jugadores = new List<Jugador>();
+    public int jugando = 0;
+    public bool isOver = false;
 
     // instanciamos el constructor del juego
     public Game()
@@ -12,14 +15,6 @@ public class Game
         // Creamos las cartas
         string cards_json = File.ReadAllText("./cards/cards.json");
         var cards = Newtonsoft.Json.JsonConvert.DeserializeObject<List<StringCard>>(cards_json);
-        Console.WriteLine(cards.Count + " cartas cargadas");
-        Console.WriteLine("Title: " + cards[0].Title);
-        Console.WriteLine("Types: " + cards[0].Types);
-        Console.WriteLine("Subtypes: " + cards[0].Subtypes);
-        Console.WriteLine("Damage: " + cards[0].Damage);
-        Console.WriteLine("Fortitude: " + cards[0].Fortitude);
-        Console.WriteLine("StunValue: " + cards[0].StunValue);
-        Console.WriteLine("Effect: " + cards[0].CardEffect);
 
         foreach (var card in cards)
         {
@@ -36,8 +31,10 @@ public class Game
         }
 
         // Creamos los jugadores
-        this.Jugador1 = new Jugador("Jugador 1", new SuperStar("", 0, 0, ""));
-        this.Jugador2 = new Jugador("Jugador 2", new SuperStar("", 0, 0, ""));
+        this.Jugador1 = new Jugador("Jugador 1", new SuperStar(""));
+        this.Jugador2 = new Jugador("Jugador 2", new SuperStar(""));
+        this.Jugadores.Add(this.Jugador1);
+        this.Jugadores.Add(this.Jugador2);
     }
 
     // Creamos el flujo del juego
@@ -63,11 +60,56 @@ public class Game
             Console.WriteLine("El jugador 2 no eligió un mazo válido");
             return;
         }
-        Console.WriteLine("--------------------------");
-        Console.WriteLine("Se enfrentan: " + this.Jugador1.SuperStar.Title + " y " + this.Jugador2.SuperStar.Title);
-        Console.WriteLine(this.Jugador1.SuperStar.Title + " tiene " + this.Jugador1.Fortitude + "F, " + this.Jugador1.hand.Count + " cartas en su mano y le quedan " + this.Jugador1.Arsenal.Count + " cartas en su arsenal.");
-        Console.WriteLine(this.Jugador2.SuperStar.Title + " tiene " + this.Jugador2.Fortitude + "F, " + this.Jugador2.hand.Count + " cartas en su mano y le quedan " + this.Jugador2.Arsenal.Count + " cartas en su arsenal.");
-        Console.WriteLine("--------------------------");
+
+        ChooseFirstPlayer();
+
+        // Jugamos hasta que se acaben las cartas
+        MainTurnLoop();
+
+    }
+
+    // Creamos el main loop de turno
+    public void MainTurnLoop()
+    {
+        while(this.isOver == false)
+        {
+            if (this.Jugadores[this.jugando].SuperStar.useBeforeDraw)
+            {
+                this.Jugadores[this.jugando].useSuperStarAbility();
+            }
+
+            this.Jugadores[this.jugando].Draw();
+            
+            int currentPlayer = this.jugando;
+            while (currentPlayer == this.jugando)
+            {
+                PrintGameStats();
+                PrintGameOptions(this.Jugadores[this.jugando]);
+
+                int jugada = int.Parse(Console.ReadLine());
+                while (jugada > 3)
+                {
+                    Console.WriteLine("Ingresa una opción válida");
+                    jugada = int.Parse(Console.ReadLine());
+                }
+                if (jugada == 0)
+                {
+                    // this.Jugadores[this.jugando].PlaySuperStarAbility();
+                }
+                if (jugada == 1)
+                {
+                    ShowCards();
+                }
+                if (jugada == 2)
+                {
+                    // this.Jugadores[this.jugando].PlayCard();
+                }
+                if (jugada == 3)
+                {
+                    this.jugando = this.jugando == 0 ? 1 : 0;
+                }
+            }
+        }
     }
 
     // hacemos al jugador 1 elegir su mazo
@@ -90,31 +132,31 @@ public class Game
         string superStar = mazo[0].Split('(')[0];
         if (superStar == "HHH ")
         {
-            jugador.SuperStar = new SuperStar("HHH", 10, 3, "");
+            jugador.SuperStar = new SuperStar("HHH");
         }
         else if (superStar == "CHRIS JERICHO ")
         {
-            jugador.SuperStar = new SuperStar("Jericho", 7, 3, "");
+            jugador.SuperStar = new SuperStar("Jericho");
         }
         else if (superStar == "KANE ")
         {
-            jugador.SuperStar = new SuperStar("Kane", 7, 3, "");
+            jugador.SuperStar = new SuperStar("Kane");
         }
         else if (superStar == "MANKIND ")
         {
-            jugador.SuperStar = new SuperStar("Mankind", 7, 3, "");
+            jugador.SuperStar = new SuperStar("Mankind");
         }
         else if (superStar == "STONE COLD STEVE AUSTIN ")
         {
-            jugador.SuperStar = new SuperStar("StoneCold", 7, 3, "");
+            jugador.SuperStar = new SuperStar("StoneCold");
         }
         else if (superStar == "THE ROCK ")
         {
-            jugador.SuperStar = new SuperStar("TheRock", 7, 3, "");
+            jugador.SuperStar = new SuperStar("TheRock");
         }
         else if (superStar == "THE UNDERTAKER ")
         {
-            jugador.SuperStar = new SuperStar("Undertaker", 7, 3, "");
+            jugador.SuperStar = new SuperStar("Undertaker");
         }
 
         // agregamos las cartas del mazo al jugador
@@ -128,7 +170,7 @@ public class Game
                 Card cardToAdd = this.Cards.Find(card => card.Title == title);
                 for (int i = 0; i < number; i++)
                 {
-                    jugador.Arsenal.Add(cardToAdd);
+                    jugador.Arsenal.Insert(0, cardToAdd);
                 }
             }
         }
@@ -136,7 +178,7 @@ public class Game
         bool validation = ValidateDeck(jugador.Arsenal, jugador);
 
         // el jugador roba 10 cartas del arsenal a su mano
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < jugador.SuperStar.handSize; i++)
         {
             jugador.hand.Add(jugador.Arsenal[0]);
             jugador.Arsenal.RemoveAt(0);
@@ -204,9 +246,97 @@ public class Game
         {
             return false;
         }
-
         return true;
     }
+
+    // Función que elige quien parte
+    public void ChooseFirstPlayer()
+    {
+        if (this.Jugador1.SuperStar.value == this.Jugador2.SuperStar.value)
+        {
+            Random aleatorio = new Random();
+            int player = aleatorio.Next(1, 3);
+
+            if (player == 1)
+            {
+                this.jugando = 0;
+            }
+            else
+            {
+                this.jugando = 1;
+            }
+        }
+        else if (this.Jugador1.SuperStar.value > this.Jugador2.SuperStar.value)
+        {
+            this.jugando = 0;
+        }
+        else
+        {
+            this.jugando = 1;
+        }
+    }
+
+    public void PrintGameStats()
+    {
+        Console.WriteLine("--------------------------");
+        Console.WriteLine("Se enfrentan: " + this.Jugador1.SuperStar.Title + " y " + this.Jugador2.SuperStar.Title);
+        Console.WriteLine(this.Jugador1.SuperStar.Title + " tiene " + this.Jugador1.Fortitude + "F, " + this.Jugador1.hand.Count + " cartas en su mano y le quedan " + this.Jugador1.Arsenal.Count + " cartas en su arsenal.");
+        Console.WriteLine(this.Jugador2.SuperStar.Title + " tiene " + this.Jugador2.Fortitude + "F, " + this.Jugador2.hand.Count + " cartas en su mano y le quedan " + this.Jugador2.Arsenal.Count + " cartas en su arsenal.");
+    }
+
+    public void PrintGameOptions(Jugador jugador)
+    {
+        Console.WriteLine("--------------------------");
+        Console.WriteLine("juega " + jugador.SuperStar.Title + ". ¿Qué quieres hacer?");
+        if (jugador.SuperStar.useBeforeDraw == false)
+        {
+            Console.WriteLine("\t0. Usar mi super habilidad");
+        }
+        Console.WriteLine("\t1. Ver mis cartas o las cartas de mi oponente");
+        Console.WriteLine("\t2. Jugar una carta");
+        Console.WriteLine("\t3. Terminar mi turno");
+        Console.WriteLine("(Ingresa un número entre 0 y 3)");
+    }
+
+    public void ShowCards()
+    {
+        Console.WriteLine("--------------------------");
+        Console.WriteLine("Juega " + this.Jugadores[this.jugando].Title + ". ¿Qué cartas quieres ver?");
+        Console.WriteLine("\t1. Mi mano.");
+        Console.WriteLine("\t2. Mi ringside.");
+        Console.WriteLine("\t3. Mi ring area.");
+        Console.WriteLine("\t4. El ringside de mi oponente.");
+        Console.WriteLine("\t5. El ring area de mi oponente.");
+        Console.WriteLine("(Ingresa un número entre 1 y 5)");
+
+        int option = Int32.Parse(Console.ReadLine());
+
+        if (option == 1)
+        {
+            this.Jugadores[this.jugando].ShowHandCards();
+        }
+        else if (option == 2)
+        {
+            this.Jugadores[this.jugando].ShowGraveYardCards();
+        }
+        else if (option == 3)
+        {
+            this.Jugadores[this.jugando].ShowRingAreaCards();
+        }
+        else if (option == 4)
+        {
+            this.Jugadores[this.jugando == 0 ? 1 : 0].ShowGraveYardCards();
+        }
+        else if (option == 5)
+        {
+            this.Jugadores[this.jugando == 0 ? 1 : 0].ShowRingAreaCards();
+        }
+
+        Console.WriteLine("Presiona cualquier tecla para continuar.");
+
+        Console.ReadKey();
+    }
+
 }
 
 // Hacemos el programa principal
@@ -220,5 +350,3 @@ class Program
         game.GameFlow();
     }
 }
-
-
