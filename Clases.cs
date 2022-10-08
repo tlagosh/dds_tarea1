@@ -107,34 +107,105 @@ public class Jugador
         carta.ShowCard(-1);
 
         // Verificamos si el oponente puede (y quiere) revertir la carta
-        bool revert = this.oponente.Defend(carta);
+        List <Card> reverts = this.oponente.CanDefend(carta);
 
-        if (revert == false)
+        if (reverts.Count == 0)
+        {
+            DropCard(carta);
+        }
+        else
         {
             Console.WriteLine("--------------------");
-            Console.WriteLine(this.oponente.SuperStar.Title + " no revierte la carta de " + this.SuperStar.Title);
-            Console.WriteLine("La carta " + carta.Title + "[" + carta.Types[0] + "] es exitosamente jugada.");
-            carta.ShowCard(-1);
-
-            this.hand.Remove(carta);
-            this.RingArea.Add(carta);
-            this.Fortitude += carta.Damage;
-
-            // Aplicamos el effecto de la carta
-
-            // Aplicamos el daño de la carta
-            this.oponente.ApplyDamageToSelf(carta);
+            Console.WriteLine("Pero " + this.oponente.SuperStar.Title + " tiene la opción de revertir la carta:");
+            Console.WriteLine("Estas son las cartas que puedes jugar:");
+            int number = 0;
+            foreach (Card revert in reverts)
+            {
+                revert.ShowCard(number);
+                number++;
+            }
+            Console.WriteLine("Ingresa el número de la carta que quieres jugar. Si no quieres jugar ninguna, ingresa -1");
+            int option = Convert.ToInt32(Console.ReadLine());
+            
+            if (option == -1)
+            {
+                DropCard(carta);
+            }
+            else
+            {
+                this.GraveYard.Add(carta);
+                if (reverts[option].Title == "Rolling Takedown" || reverts[option].Title == "Knee to the Gut")
+                {
+                    this.oponente.DefendFromHand(reverts[option], applyFortitude: false);
+                }
+                else
+                {
+                    this.oponente.DefendFromHand(reverts[option]);
+                }
+            }
         }
     }
 
-    // Agregamos el método para defendernos
-    public bool Defend(Card carta)
+    // Agregamos el método para jugar exitosamente una carta
+    public void DropCard(Card carta)
     {
-        return false;
+        Console.WriteLine("--------------------");
+        Console.WriteLine(this.oponente.SuperStar.Title + " no revierte la carta de " + this.SuperStar.Title);
+        Console.WriteLine("La carta " + carta.Title + "[" + carta.Types[0] + "] es exitosamente jugada.");
+        carta.ShowCard(-1);
+
+        this.hand.Remove(carta);
+        this.RingArea.Add(carta);
+        this.Fortitude += carta.Damage;
+
+        // Aplicamos el effecto de la carta
+
+        // Aplicamos el daño de la carta
+        this.oponente.ApplyDamageToSelf(carta);
+
+
+    }
+    // Agregamos el método para defendernos
+    public List <Card> CanDefend(Card carta)
+    {
+        List <Card> reverts = new List<Card>();
+        foreach (Card card in this.hand)
+        {
+            if (card.IsReversal(carta, this.Fortitude))
+            {
+                reverts.Add(card);
+            }
+        }
+
+        return reverts;
+    }
+
+    // Agregamos el metodo para defender con un reversal desde la mano
+    public void DefendFromHand(Card carta, bool applyFortitude = true)
+    {
+        this.RingArea.Add(carta);
+        this.hand.Remove(carta);
+        if (applyFortitude)
+        {
+            this.Fortitude += carta.Damage;
+        }
+
+        this.oponente.ApplyDamageToSelf(carta, canReverse: false);
+
+        if (carta.Title == "Manager Interferes")
+        {
+            this.Draw();
+        }
+
+        if (carta.Title == "Clean Break")
+        {
+            this.oponente.ApplyDamageToSelf(new Card("", new List<string>(), new List<string>(), "", 4, 0, 0), canReverse: false);
+            this.Draw();
+        }
     }
 
     // Agregamos el método para aplicarnos daño
-    public void ApplyDamageToSelf(Card carta)
+    public void ApplyDamageToSelf(Card carta, bool canReverse = true)
     {
         Console.WriteLine("--------------------");
         Console.WriteLine(this.SuperStar.Title + " recibe " + carta.Damage + " de daño.");
@@ -145,10 +216,21 @@ public class Jugador
             if (this.Arsenal.Count > 0)
             {
                 Card cartaSacada = this.Arsenal[0];
-                this.Arsenal.Remove(cartaSacada);
-                this.GraveYard.Add(cartaSacada);
+                
                 Console.WriteLine("-------------------- " + i.ToString() + "/" + carta.Damage + " damage");
                 cartaSacada.ShowCard(-1);
+
+                this.Arsenal.Remove(cartaSacada);
+                this.GraveYard.Add(cartaSacada);
+
+                if (canReverse)
+                {
+                    if (cartaSacada.IsReversal(carta, this.Fortitude, playedFromHand: false))
+                    {
+                        Console.WriteLine("--------------------");
+                        break;
+                    }
+                }
             }
             else
             {
@@ -519,6 +601,82 @@ public class Card
         }
         Console.WriteLine();
         Console.WriteLine("Effect: " + this.CardEffect);
+    }
+
+    // Función que verifica si una carta es un reversal posible para otra
+    public bool IsReversal(Card card, int FortitudeValueOfPlayer, bool playedFromHand = true)
+    {
+        if (card.Fortitude > FortitudeValueOfPlayer)
+        {
+            return false;
+        }
+
+        if (this.Types.Contains("Reversal") == false)
+        {
+            return false;
+        }
+
+        // Verificamos que la carta a la que queremos aplicar el reversal contenga un subtipo que coincida con el reversal
+        foreach (string subtype in this.Subtypes)
+        {
+            string subtypeToCheck = subtype.Replace("Reversal", "");
+            if (card.Subtypes.Contains(subtypeToCheck))
+            {
+                return true;
+            }
+        }
+
+        if (this.Title == "Rolling Takedown")
+        {
+            if (card.Subtypes.Contains("Grapple") && card.Damage <= 7)
+            {
+                this.Damage = card.Damage;
+                return true;
+            }
+        }
+
+        if (this.Title == "Knee to the Gut")
+        {
+            if (card.Subtypes.Contains("Strike") && card.Damage <= 7)
+            {
+                this.Damage = card.Damage;
+                return true;
+            }
+        }
+        
+        if (this.Title == "Elbow to the Face")
+        {
+            if (card.Damage <= 7)
+            {
+                return true;
+            }
+        }
+        
+        if (this.Title == "Clean Break")
+        {
+            if (playedFromHand && card.Title == "Jockeying for Position")
+            {
+                return true;
+            }
+        }
+
+        if (this.Title == "Manager Interferes")
+        {
+            if (card.Types.Contains("Maneuver"))
+            {
+                return true;
+            }
+        }
+
+        if (this.Title == "No Chance in Hell")
+        {
+            if (card.Types.Contains("Action"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
