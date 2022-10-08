@@ -21,15 +21,15 @@ public class SuperStar
         }
         if (Title == "Undertaker")
         {
-            this.handSize = 7;
-            this.value = 5;
+            this.handSize = 6;
+            this.value = 4;
             this.ability = "Once during your turn, you may discard 2 cards to the Ringside pile and take 1 card from the Ringside pile and place it into your hand.";
             this.useBeforeDraw = false;
         }
         if (Title == "Mankind")
         {
-            this.handSize = 7;
-            this.value = 5;
+            this.handSize = 2;
+            this.value = 4;
             this.ability = "You must always draw 2 cards, if possible, during your draw segment. All damage from opponent is at -1D.";
             this.useBeforeDraw = true;
         }
@@ -38,11 +38,11 @@ public class SuperStar
             this.handSize = 10;
             this.value = 3;
             this.ability = "None";
-            this.useBeforeDraw = false;
+            this.useBeforeDraw = true;
         }
         if (Title == "TheRock")
         {
-            this.handSize = 7;
+            this.handSize = 5;
             this.value = 5;
             this.ability = "At the start of your turn, before your draw segment, you may take 1 card from your Ringside pile and place it on the bottom of your Arsenal.";
             this.useBeforeDraw = true;
@@ -79,9 +79,11 @@ public class Jugador
     public List <Card> Arsenal;
     public List <Card> RingArea;
     public List <Card> GraveYard;
-    public int Points;
     public string Title;
     public int Fortitude;
+    public Jugador oponente;
+    public int DamageDelta;
+    public int DrawCount;
 
     // Agregamos el constructor del jugador
     public Jugador(string title, SuperStar superStar)
@@ -92,16 +94,67 @@ public class Jugador
         this.Arsenal = new List<Card>();
         this.RingArea = new List<Card>();
         this.GraveYard = new List<Card>();
-        this.Points = 0;
         this.Fortitude = 0;
+        this.DamageDelta = 0;
+        this.DrawCount = 1;
     }
 
-    // Agregamos el método para agregar una carta al RingArea
+    // Agregamos el método para jugar una carta
     public void PlayCard(Card carta)
-    {
-        this.RingArea.Add(carta);
+    {   
+        Console.WriteLine("--------------------");
+        Console.WriteLine(this.SuperStar.Title + " Intenta jugar la siguiente carta como [" + carta.Types[0] + "]");
+        carta.ShowCard(-1);
 
-        this.Fortitude += carta.Damage;
+        // Verificamos si el oponente puede (y quiere) revertir la carta
+        bool revert = this.oponente.Defend(carta);
+
+        if (revert == false)
+        {
+            Console.WriteLine("--------------------");
+            Console.WriteLine(this.oponente.SuperStar.Title + " no revierte la carta de " + this.SuperStar.Title);
+            Console.WriteLine("La carta " + carta.Title + "[" + carta.Types[0] + "] es exitosamente jugada.");
+            carta.ShowCard(-1);
+
+            this.hand.Remove(carta);
+            this.RingArea.Add(carta);
+            this.Fortitude += carta.Damage;
+
+            // Aplicamos el effecto de la carta
+
+            // Aplicamos el daño de la carta
+            this.oponente.ApplyDamageToSelf(carta);
+        }
+    }
+
+    // Agregamos el método para defendernos
+    public bool Defend(Card carta)
+    {
+        return false;
+    }
+
+    // Agregamos el método para aplicarnos daño
+    public void ApplyDamageToSelf(Card carta)
+    {
+        Console.WriteLine("--------------------");
+        Console.WriteLine(this.SuperStar.Title + " recibe " + carta.Damage + " de daño.");
+        
+        // Sacamos una carta del arsenal por cada punto de daño
+        for (int i = 1; i <= (carta.Damage + this.DamageDelta); i++)
+        {
+            if (this.Arsenal.Count > 0)
+            {
+                Card cartaSacada = this.Arsenal[0];
+                this.Arsenal.Remove(cartaSacada);
+                this.GraveYard.Add(cartaSacada);
+                Console.WriteLine("-------------------- " + i.ToString() + "/" + carta.Damage + " damage");
+                cartaSacada.ShowCard(-1);
+            }
+            else
+            {
+                Console.WriteLine(this.SuperStar.Title + " no tiene más cartas en su arsenal.");
+            }
+        }
     }
 
     // Agregamos el método para mostrar las cartas de la mano
@@ -148,13 +201,6 @@ public class Jugador
         }
     }
 
-    // Agregamos el método para mostrar los puntos del jugador
-    public void ShowPoints()
-    {
-        Console.WriteLine("Puntos del jugador:");
-        Console.WriteLine(this.Points);
-    }
-
     // Agregamos el método para mostrar el Title del jugador
     public void ShowTitle()
     {
@@ -174,7 +220,6 @@ public class Jugador
     {
         Console.WriteLine("Estado del jugador:");
         Console.WriteLine("Name: " + this.Title);
-        Console.WriteLine("Puntos: " + this.Points);
         Console.WriteLine("SuperStar: " + this.SuperStar.Title);
         Console.WriteLine("Cartas en la mano:");
         foreach (Card carta in this.hand)
@@ -203,14 +248,228 @@ public class Jugador
     {
         if(this.Arsenal.Count > 0)
         {
-            this.hand.Add(this.Arsenal[0]);
-            this.Arsenal.RemoveAt(0);
+            for (int i = 0; i < this.DrawCount; i++)
+            {
+                this.hand.Add(this.Arsenal[0]);
+                this.Arsenal.RemoveAt(0);
+            }
         }
     }
 
-    public void useSuperStarAbility()
+    // Método para usar la super habilidad de la super Estrella
+    public void UseSuperStarAbility()
     {
-        // aplicar superstar ability
+        Console.WriteLine("--------------------");
+        
+        if (this.SuperStar.Title == "TheRock")
+        {
+            Console.WriteLine("Eres The Rock, quieres usar tu habilidad especial? [Y/N]");
+            string respuesta = Console.ReadLine();
+
+            if (respuesta == "Y" || respuesta == "y")
+            {
+                Console.WriteLine("La habilidad especial de The Rock es que puedes robar una carta del Ring Side y ponerla en el fondo de tu Arsenal.");
+                if (this.GraveYard.Count > 0)
+                {
+                    Card cartaElegida = this.ExtractCardFromRingSide();
+                    this.Arsenal.Add(cartaElegida);
+                    Console.WriteLine("La carta " + cartaElegida.Title + " fue robada del Ring Side y puesta en tu mano.");
+                }
+                else
+                {
+                    Console.WriteLine("No tienes cartas en tu RingSide.");
+                }
+            }
+            else if (respuesta == "N" || respuesta == "n")
+            {
+                Console.WriteLine("No usaste la habilidad especial de The Rock.");
+            }
+            else
+            {
+                Console.WriteLine("Ingresa un valor válido.");
+            }
+        }
+        
+        if (this.SuperStar.Title == "Kane")
+        {
+            Card cartaSacada = this.oponente.Arsenal[0];
+            this.oponente.Arsenal.Remove(cartaSacada);
+            this.oponente.GraveYard.Add(cartaSacada);
+
+            Console.WriteLine("La habilidad especial de Kane es que su oponente debe descartar una carta de su arsenal.");
+            Console.WriteLine("La carta " + cartaSacada.Title + " de " + this.oponente.SuperStar.Title + " fue robada de su Arsenal y puesta en su Ring Side.");
+        }
+
+        if (this.SuperStar.Title == "StoneCold")
+        {
+            Console.WriteLine("La habilidad especial de StoneCold es que puede robar otra carta del arsenal. Pero cambiarla por una de su mano, poniendo esta al final de su arsenal.");
+
+            this.Draw();
+
+            Console.WriteLine("La carta " + this.hand[0].Title + " fue robada de su Arsenal y puesta en su mano.");
+
+            Console.WriteLine("Elija una carta de su mano para ponerla al final de su Arsenal.");
+            this.ShowHandCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.hand.Count - 1).ToString() + ")");
+            int cartaElegida = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacada = this.hand[cartaElegida];
+            this.hand.Remove(cartaSacada);
+            this.Arsenal.Add(cartaSacada);
+
+            Console.WriteLine("La carta " + cartaSacada.Title + " fue robada de su mano y puesta al final de su Arsenal.");
+        }
+
+        if (this.SuperStar.Title == "Undertaker")
+        {
+            Console.WriteLine("La habilidad especial de Undertaker es que puede descartar 2 cartas de su mano y poner una carta de su Ring Side en su mano.");
+
+            Console.WriteLine("Elija una carta de su mano para descartar.");
+            this.ShowHandCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.hand.Count - 1).ToString() + ")");
+            int cartaElegida1 = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacada1 = this.hand[cartaElegida1];
+            this.hand.Remove(cartaSacada1);
+            this.GraveYard.Add(cartaSacada1);
+
+            Console.WriteLine("La carta " + cartaSacada1.Title + " fue robada de su mano y puesta en su Ring Side.");
+
+            Console.WriteLine("Elija otra carta de su mano para descartar.");
+            this.ShowHandCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.hand.Count - 1).ToString() + ")");
+            int cartaElegida2 = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacada2 = this.hand[cartaElegida2];
+            this.hand.Remove(cartaSacada2);
+            this.GraveYard.Add(cartaSacada2);
+
+            Console.WriteLine("La carta " + cartaSacada2.Title + " fue robada de su mano y puesta en su Ring Side.");
+
+            Console.WriteLine("Elija una carta de su Ring Side para poner en su mano.");
+            this.ShowGraveYardCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.GraveYard.Count - 1).ToString() + ")");
+            int cartaElegida3 = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacada3 = this.GraveYard[cartaElegida3];
+            this.GraveYard.Remove(cartaSacada3);
+            this.hand.Add(cartaSacada3);
+
+            Console.WriteLine("La carta " + cartaSacada3.Title + " fue robada de su Ring Side y puesta en su mano.");
+        }
+
+        if (this.SuperStar.Title == "Jericho")
+        {
+            Console.WriteLine("La habilidad especial de Jericho es que puede descartar una carta de su mano, y obligar a su oponente a hacer lo mismo.");
+
+            Console.WriteLine("Elija una carta de su mano para descartarla.");
+            this.ShowHandCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.hand.Count - 1).ToString() + ")");
+            int cartaElegida = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacada = this.hand[cartaElegida];
+            this.hand.Remove(cartaSacada);
+            this.GraveYard.Add(cartaSacada);
+
+            Console.WriteLine("La carta " + cartaSacada.Title + " fue robada de su mano y puesta en su Ring Side.");
+
+            Console.WriteLine("Su oponente debe elegir una carta de su mano para descartarla.");
+            this.oponente.ShowHandCards();
+            Console.WriteLine("(Ingrese un número del 0 al " + (this.oponente.hand.Count - 1).ToString() + ")");
+            int cartaElegidaOponente = Convert.ToInt32(Console.ReadLine());
+
+            Card cartaSacadaOponente = this.oponente.hand[cartaElegidaOponente];
+            this.oponente.hand.Remove(cartaSacadaOponente);
+            this.oponente.GraveYard.Add(cartaSacadaOponente);
+
+            Console.WriteLine("La carta " + cartaSacadaOponente.Title + " fue robada de su mano y puesta en su Ring Side.");
+        }
+    }
+
+    // Método para jugar una carta de la mano
+    public void DecideWichCardToPlay()
+    {
+        List <Card> playableCards = ShowPlayableCards();
+
+        if (playableCards.Count > 0)
+        {
+            Console.WriteLine("Ingresa el ID de la carta que quieres jugar. Puedes ingresar '-1' para cancelar.");
+            Console.WriteLine("Ingresa un número entre -1 y " + (playableCards.Count - 1).ToString() + ")");
+        
+            int cardID = Convert.ToInt32(Console.ReadLine());
+
+            if (cardID == -1)
+            {
+                Console.WriteLine("Cancelaste la acción.");
+            }
+            else
+            {
+                if (cardID >= 0 && cardID < playableCards.Count)
+                {
+                    this.PlayCard(playableCards[cardID]);
+                }
+                else
+                {
+                    Console.WriteLine("El ID ingresado no es válido.");
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine("No tienes cartas jugables.");
+        }
+    }
+
+    // Método para mostrar las cartas jugables
+    public List <Card> ShowPlayableCards()
+    {
+        Console.WriteLine("Estas son las cartas que puedes jugar:");
+        List <Card> pleyableCards = this.GetPlayableCards();
+        int number = 0;
+        foreach (Card carta in pleyableCards)
+        {
+            carta.ShowCard(number);
+            number++;
+        }
+
+        return pleyableCards;
+    }
+
+    // Funcion que obtiene las cartas que se pueden jugar de la mano del jugador
+    public List <Card> GetPlayableCards()
+    {
+        
+        List <Card> playableCards = new List<Card>();
+        foreach (Card card in this.hand)
+        {
+            if (card.Fortitude <= this.Fortitude && (card.Types.Contains("Action") || card.Types.Contains("Maneuver")))
+            {
+                playableCards.Add(card);
+            }
+        }
+        return playableCards;
+    }
+
+    public Card ExtractCardFromRingSide()
+    {
+        Console.WriteLine("--------------------");
+        Console.WriteLine("Estas son las cartas en tu RingSide:");
+        int number = 0;
+        foreach (Card card in this.GraveYard)
+        {
+            card.ShowCard(number);
+            number++;
+        }
+        
+        Console.WriteLine("Ingresa el ID de la carta que quieres extraer.");
+        Console.WriteLine("Ingresa un número entre 0 y " + (this.GraveYard.Count - 1).ToString() + ")");
+
+        int cardID = Convert.ToInt32(Console.ReadLine());
+
+        Card carta = this.GraveYard[cardID];
+        this.GraveYard.RemoveAt(cardID);
+
+        return carta;
     }
 
 }
@@ -241,13 +500,16 @@ public class Card
     // Agregamos el método para mostrar los atributos de la carta
     public void ShowCard(int number)
     {
-        Console.WriteLine("------------- Cartd #" + number);
+        if (number != -1)
+        {
+            Console.WriteLine("------------- Card #" + number);
+        }
         Console.WriteLine("Title: " + this.Title);
         Console.WriteLine("Stats: [" + this.Fortitude + "F/" + this.Damage + "D/" + this.StunValue + "SV]");
         Console.Write("Types: ");
         foreach (string type in this.Types)
         {
-            Console.Write(type);
+            Console.Write(type + ", ");
         }
         Console.WriteLine();
         Console.Write("Subtypes: ");

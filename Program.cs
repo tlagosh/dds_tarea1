@@ -33,6 +33,8 @@ public class Game
         // Creamos los jugadores
         this.Jugador1 = new Jugador("Jugador 1", new SuperStar(""));
         this.Jugador2 = new Jugador("Jugador 2", new SuperStar(""));
+        this.Jugador1.oponente = this.Jugador2;
+        this.Jugador2.oponente = this.Jugador1;
         this.Jugadores.Add(this.Jugador1);
         this.Jugadores.Add(this.Jugador2);
     }
@@ -48,7 +50,7 @@ public class Game
         }
         else
         {
-            Console.WriteLine("El jugador 1 no eligió un mazo válido");
+            Console.WriteLine("Lo lamento, pero el mazo de " + this.Jugador1.SuperStar.Title + " no es válido");
             return;
         }
         if (this.ChooseDeck(this.Jugador2))
@@ -57,7 +59,7 @@ public class Game
         }
         else
         {
-            Console.WriteLine("El jugador 2 no eligió un mazo válido");
+            Console.WriteLine("Lo lamento, pero el mazo de " + this.Jugador2.SuperStar.Title + " no es válido");
             return;
         }
 
@@ -75,16 +77,17 @@ public class Game
         {
             if (this.Jugadores[this.jugando].SuperStar.useBeforeDraw)
             {
-                this.Jugadores[this.jugando].useSuperStarAbility();
+                this.Jugadores[this.jugando].UseSuperStarAbility();
             }
 
             this.Jugadores[this.jugando].Draw();
             
             int currentPlayer = this.jugando;
+            bool superHabilityUsed = false;
             while (currentPlayer == this.jugando)
             {
                 PrintGameStats();
-                PrintGameOptions(this.Jugadores[this.jugando]);
+                PrintGameOptions(this.Jugadores[this.jugando], superHabilityUsed);
 
                 int jugada = int.Parse(Console.ReadLine());
                 while (jugada > 3)
@@ -92,9 +95,10 @@ public class Game
                     Console.WriteLine("Ingresa una opción válida");
                     jugada = int.Parse(Console.ReadLine());
                 }
-                if (jugada == 0)
+                if (jugada == 0 && superHabilityUsed == false)
                 {
-                    // this.Jugadores[this.jugando].PlaySuperStarAbility();
+                    this.Jugadores[this.jugando].UseSuperStarAbility();
+                    superHabilityUsed = true;
                 }
                 if (jugada == 1)
                 {
@@ -102,11 +106,20 @@ public class Game
                 }
                 if (jugada == 2)
                 {
-                    // this.Jugadores[this.jugando].PlayCard();
+                    this.Jugadores[this.jugando].DecideWichCardToPlay();
                 }
                 if (jugada == 3)
                 {
                     this.jugando = this.jugando == 0 ? 1 : 0;
+                }
+            }
+
+            foreach (Jugador jugador in this.Jugadores)
+            {
+                if (jugador.Arsenal.Count == 0)
+                {
+                    this.isOver = true;
+                    Console.WriteLine("¡El ganador es " + jugador.oponente.SuperStar.Title + "!");
                 }
             }
         }
@@ -145,6 +158,8 @@ public class Game
         else if (superStar == "MANKIND ")
         {
             jugador.SuperStar = new SuperStar("Mankind");
+            jugador.DrawCount = 2;
+            jugador.DamageDelta = -1;
         }
         else if (superStar == "STONE COLD STEVE AUSTIN ")
         {
@@ -197,24 +212,27 @@ public class Game
 
         string superStarName = jugador.SuperStar.Title;
         List<string> superStars = new List<string>() {"HHH", "Jericho", "Kane", "Mankind", "StoneCold", "TheRock", "Undertaker"};
-        bool hasHell = false;
+        bool hasHeel = false;
         bool hasFace = false;
         
         foreach (Card card in deck)
         {
             foreach (string superStar in superStars)
             {
-                if (card.Subtypes.Contains(superStar))
+                foreach (string subType in card.Subtypes)
                 {
-                    if (superStar != superStarName)
+                    if (subType == superStar)
                     {
-                        return false;
+                        if (superStar != superStarName)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
-            if (card.Subtypes.Contains("Hell"))
+            if (card.Subtypes.Contains("Heel"))
             {
-                hasHell = true;
+                hasHeel = true;
             }
             if(card.Subtypes.Contains("Face"))
             {
@@ -242,7 +260,7 @@ public class Game
             }
         }
 
-        if (hasHell && hasFace)
+        if (hasHeel && hasFace)
         {
             return false;
         }
@@ -284,11 +302,11 @@ public class Game
         Console.WriteLine(this.Jugador2.SuperStar.Title + " tiene " + this.Jugador2.Fortitude + "F, " + this.Jugador2.hand.Count + " cartas en su mano y le quedan " + this.Jugador2.Arsenal.Count + " cartas en su arsenal.");
     }
 
-    public void PrintGameOptions(Jugador jugador)
+    public void PrintGameOptions(Jugador jugador, bool superHabilityUsed)
     {
         Console.WriteLine("--------------------------");
         Console.WriteLine("juega " + jugador.SuperStar.Title + ". ¿Qué quieres hacer?");
-        if (jugador.SuperStar.useBeforeDraw == false)
+        if (jugador.SuperStar.useBeforeDraw == false && superHabilityUsed == false)
         {
             Console.WriteLine("\t0. Usar mi super habilidad");
         }
