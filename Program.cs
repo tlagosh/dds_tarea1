@@ -106,7 +106,12 @@ public class Game
                 }
                 if (jugada == 2)
                 {
-                    this.Jugadores[this.jugando].DecideWichCardToPlay();
+                    bool keepPlaying = this.Jugadores[this.jugando].DecideWichCardToPlay();
+                    if (keepPlaying == false)
+                    {
+                        Console.WriteLine("Se termina el turno de " + this.Jugadores[this.jugando].Title);
+                        this.jugando = this.jugando == 0 ? 1 : 0;
+                    }
                 }
                 if (jugada == 3)
                 {

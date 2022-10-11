@@ -100,7 +100,7 @@ public class Jugador
     }
 
     // Agregamos el método para jugar una carta
-    public void PlayCard(Card carta)
+    public bool PlayCard(Card carta)
     {   
         Console.WriteLine("--------------------");
         Console.WriteLine(this.SuperStar.Title + " Intenta jugar la siguiente carta como [" + carta.Types[0] + "]");
@@ -111,7 +111,7 @@ public class Jugador
 
         if (reverts.Count == 0)
         {
-            DropCard(carta);
+            return DropCard(carta);
         }
         else
         {
@@ -129,10 +129,11 @@ public class Jugador
             
             if (option == -1)
             {
-                DropCard(carta);
+                return DropCard(carta);
             }
             else
             {
+                this.hand.Remove(carta);
                 this.GraveYard.Add(carta);
                 if (reverts[option].Title == "Rolling Takedown" || reverts[option].Title == "Knee to the Gut")
                 {
@@ -142,12 +143,13 @@ public class Jugador
                 {
                     this.oponente.DefendFromHand(reverts[option]);
                 }
+                return false;
             }
         }
     }
 
     // Agregamos el método para jugar exitosamente una carta
-    public void DropCard(Card carta)
+    public bool DropCard(Card carta)
     {
         Console.WriteLine("--------------------");
         Console.WriteLine(this.oponente.SuperStar.Title + " no revierte la carta de " + this.SuperStar.Title);
@@ -161,7 +163,7 @@ public class Jugador
         // Aplicamos el effecto de la carta
 
         // Aplicamos el daño de la carta
-        this.oponente.ApplyDamageToSelf(carta);
+        return this.oponente.ApplyDamageToSelf(carta);
 
 
     }
@@ -199,13 +201,18 @@ public class Jugador
 
         if (carta.Title == "Clean Break")
         {
-            this.oponente.ApplyDamageToSelf(new Card("", new List<string>(), new List<string>(), "", 4, 0, 0), canReverse: false);
+            for (int i = 0; i < 4; i++)
+            {
+                this.oponente.GraveYard.Add(this.oponente.hand[0]);
+                Console.WriteLine("La carta " + this.oponente.hand[0].Title + " es descartada de la mano de " + this.oponente.SuperStar.Title);
+                this.oponente.hand.RemoveAt(0);
+            }
             this.Draw();
         }
     }
 
     // Agregamos el método para aplicarnos daño
-    public void ApplyDamageToSelf(Card carta, bool canReverse = true)
+    public bool ApplyDamageToSelf(Card carta, bool canReverse = true)
     {
         Console.WriteLine("--------------------");
         Console.WriteLine(this.SuperStar.Title + " recibe " + carta.Damage + " de daño.");
@@ -228,15 +235,27 @@ public class Jugador
                     if (cartaSacada.IsReversal(carta, this.Fortitude, playedFromHand: false))
                     {
                         Console.WriteLine("--------------------");
-                        break;
+                        Console.WriteLine("Sale " + cartaSacada.Title + "[" + cartaSacada.Types[0] + "] y " + this.SuperStar.Title + " la usa para revertir el daño.");
+
+                        // Aplicamos effecto SV de la carta
+                        if (i < (carta.Damage + this.DamageDelta) && carta.StunValue > 0)
+                        {
+                            for (int j = 1; j <= carta.StunValue; j++)
+                            {
+                                this.oponente.Draw(drawOne: true);
+                            }
+                        }
+                        return false;
                     }
                 }
             }
             else
             {
                 Console.WriteLine(this.SuperStar.Title + " no tiene más cartas en su arsenal.");
+                return true;
             }
         }
+        return true;
     }
 
     // Agregamos el método para mostrar las cartas de la mano
@@ -326,14 +345,22 @@ public class Jugador
     }
 
     // Método para robar una carta del arsenal y ponerla en la mano
-    public void Draw()
+    public void Draw(bool drawOne = false)
     {
         if(this.Arsenal.Count > 0)
         {
-            for (int i = 0; i < this.DrawCount; i++)
+            if (drawOne)
             {
                 this.hand.Add(this.Arsenal[0]);
                 this.Arsenal.RemoveAt(0);
+            }
+            else
+            {
+                for (int i = 0; i < this.DrawCount; i++)
+                {
+                    this.hand.Add(this.Arsenal[0]);
+                    this.Arsenal.RemoveAt(0);
+                }
             }
         }
     }
@@ -469,7 +496,7 @@ public class Jugador
     }
 
     // Método para jugar una carta de la mano
-    public void DecideWichCardToPlay()
+    public bool DecideWichCardToPlay()
     {
         List <Card> playableCards = ShowPlayableCards();
 
@@ -483,22 +510,25 @@ public class Jugador
             if (cardID == -1)
             {
                 Console.WriteLine("Cancelaste la acción.");
+                return true;
             }
             else
             {
                 if (cardID >= 0 && cardID < playableCards.Count)
                 {
-                    this.PlayCard(playableCards[cardID]);
+                    return this.PlayCard(playableCards[cardID]);
                 }
                 else
                 {
                     Console.WriteLine("El ID ingresado no es válido.");
+                    return true;
                 }
             }
         }
         else
         {
             Console.WriteLine("No tienes cartas jugables.");
+            return true;
         }
     }
 
@@ -606,7 +636,7 @@ public class Card
     // Función que verifica si una carta es un reversal posible para otra
     public bool IsReversal(Card card, int FortitudeValueOfPlayer, bool playedFromHand = true)
     {
-        if (card.Fortitude > FortitudeValueOfPlayer)
+        if (this.Fortitude > FortitudeValueOfPlayer)
         {
             return false;
         }
